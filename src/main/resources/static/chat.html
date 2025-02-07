@@ -3,24 +3,60 @@
 <head>
     <title>DeepSeek AI Chat</title>
     <script>
+        // Function to load chat history from the backend
+        async function loadChatHistory() {
+            // Fetch chat history from the server
+            let response = await fetch('/chat/history');
+            let data = await response.json();
+
+            // Appending the chat history to the chat box
+            const chatBox = document.getElementById("chatBox");
+            data.chatHistory.forEach(msg => {
+                chatBox.innerHTML +=
+                    `<p><b>${msg.sender}:</b> ${msg.message}</p>`;
+            });
+
+            // Scroll to the bottom to show the latest messages
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Function to send a message and get the AI response
         async function sendMessage() {
             let message = document.getElementById("userMessage").value;
+            if (!message.trim()) return; // Prevent sending empty messages
+
+            // Send the message to the backend and get AI response
             let response = await fetch('/ai/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: 'message=' + encodeURIComponent(message)
             });
             let data = await response.json();
-            document.getElementById("chatBox").innerHTML += `<p><b>You:</b> ${message}</p><p><b>AI:</b> ${data.message}</p>`;
+
+            // Appending the user message and AI response to the chat box
+            document.getElementById("chatBox").innerHTML +=
+                `<p><b>You:</b> ${message}</p>
+                 <p><b>AI:</b> ${data.message}</p>`;
+
+            // Clear the input field and scroll to the bottom
+            document.getElementById("userMessage").value = '';
+            document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
         }
+
+        // Load chat history when the page loads
+        window.onload = loadChatHistory;
     </script>
 </head>
 <body>
 <h2>DeepSeek AI Chat</h2>
-<div id="chatBox" th:each="msg : ${chatHistory}">
-    <p><b th:text="${msg.sender}"></b>: <span th:text="${msg.message}"></span></p>
+
+<!-- Chat box to display messages -->
+<div id="chatBox" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
+    <!-- Chat history will be rendered here by the JavaScript function -->
 </div>
-<input type="text" id="userMessage">
-<button onclick="sendMessage()">Send</button>
+
+<!-- Input field and send button -->
+<input type="text" id="userMessage" placeholder="Type your message here..." style="width: 80%; padding: 10px; margin-top: 10px;">
+<button onclick="sendMessage()" style="padding: 10px 20px; margin-top: 10px;">Send</button>
 </body>
 </html>
