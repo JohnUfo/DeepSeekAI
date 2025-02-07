@@ -2,6 +2,105 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>DeepSeek AI Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: white;
+        }
+
+        .chat-container {
+            width: 80%;  /* Increased width */
+            max-width: 1000px;  /* Max width for larger screens */
+            height: 80vh;  /* Increased height */
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 {
+            text-align: center;
+            padding: 20px;
+            background-color: #333;
+            color: #ddd;
+            margin: 0;
+        }
+
+        #chatBox {
+            flex-grow: 1;
+            overflow-y: scroll;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background-color: #333;
+            color: #ddd;
+            border: 1px solid #444;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #4CAF50;
+            color: white;
+            border: 1px solid #4CAF50;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 12px;
+            margin: 15px;
+            border: 1px solid #444;
+            border-radius: 20px;
+            font-size: 14px;
+            background-color: #2e2e2e;
+            color: white;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .message-box {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .message-box input[type="text"] {
+            margin-right: 10px;
+        }
+
+    </style>
     <script>
         // Function to load chat history from the backend
         async function loadChatHistory() {
@@ -12,8 +111,11 @@
             // Appending the chat history to the chat box
             const chatBox = document.getElementById("chatBox");
             data.chatHistory.forEach(msg => {
-                chatBox.innerHTML +=
-                    `<p><b>${msg.sender}:</b> ${msg.message}</p>`;
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.classList.add(msg.sender === 'AI' ? 'ai-message' : 'user-message');
+                messageElement.innerHTML = `<b>${msg.sender}:</b> ${msg.message}`;
+                chatBox.appendChild(messageElement);
             });
 
             // Scroll to the bottom to show the latest messages
@@ -34,13 +136,23 @@
             let data = await response.json();
 
             // Appending the user message and AI response to the chat box
-            document.getElementById("chatBox").innerHTML +=
-                `<p><b>You:</b> ${message}</p>
-                 <p><b>AI:</b> ${data.message}</p>`;
+            const chatBox = document.getElementById("chatBox");
+
+            // User message
+            const userMessageElement = document.createElement('div');
+            userMessageElement.classList.add('message', 'user-message');
+            userMessageElement.innerHTML = `<b>You:</b> ${message}`;
+            chatBox.appendChild(userMessageElement);
+
+            // AI response
+            const aiMessageElement = document.createElement('div');
+            aiMessageElement.classList.add('message', 'ai-message');
+            aiMessageElement.innerHTML = `<b>AI:</b> ${data.message}`;
+            chatBox.appendChild(aiMessageElement);
 
             // Clear the input field and scroll to the bottom
             document.getElementById("userMessage").value = '';
-            document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         // Load chat history when the page loads
@@ -48,15 +160,21 @@
     </script>
 </head>
 <body>
-<h2>DeepSeek AI Chat</h2>
 
-<!-- Chat box to display messages -->
-<div id="chatBox" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
-    <!-- Chat history will be rendered here by the JavaScript function -->
+<div class="chat-container">
+    <h2>DeepSeek AI Chat</h2>
+
+    <!-- Chat box to display messages -->
+    <div id="chatBox">
+        <!-- Chat history will be rendered here by the JavaScript function -->
+    </div>
+
+    <!-- Input field and send button -->
+    <div class="message-box">
+        <input type="text" id="userMessage" placeholder="Type your message here...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
 </div>
 
-<!-- Input field and send button -->
-<input type="text" id="userMessage" placeholder="Type your message here..." style="width: 80%; padding: 10px; margin-top: 10px;">
-<button onclick="sendMessage()" style="padding: 10px 20px; margin-top: 10px;">Send</button>
 </body>
 </html>
