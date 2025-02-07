@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>DeepSeek AI Chat</title>
+    <script>
+        async function sendMessage() {
+            let message = document.getElementById("userMessage").value;
+            let response = await fetch('/ai/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'message=' + encodeURIComponent(message)
+            });
+            let data = await response.json();
+            document.getElementById("chatBox").innerHTML += `<p><b>You:</b> ${message}</p><p><b>AI:</b> ${data.message}</p>`;
+        }
+    </script>
+</head>
+<body>
+<h2>DeepSeek AI Chat</h2>
+<div id="chatBox" th:each="msg : ${chatHistory}">
+    <p><b th:text="${msg.sender}"></b>: <span th:text="${msg.message}"></span></p>
+</div>
+<input type="text" id="userMessage">
+<button onclick="sendMessage()">Send</button>
+</body>
+</html>
